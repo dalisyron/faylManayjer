@@ -1,5 +1,6 @@
 import time
 import os
+import shutil
 
 class Item:
   def __init__(self, path, name, date, par_item = None):
@@ -7,6 +8,17 @@ class Item:
     self.name = name
     self.date = date
     self.par_item = par_item
+  def copy(self,destination):
+    if os.path.splitext(self.path + '/' + self.name)[1] == '':
+      shutil.copytree(self.path + '/' + self.name, destination + '/' + self.name)
+    else:
+      shutil.copyfile(self.path + '/' + self.name, destination + '/' + self.name)
+  def delete(self):
+    if os.path.splitext(self.path + '/' + self.name)[1] == '':
+      shutil.rmtree(self.path + '/' + self.name)
+    else:
+      os.remove(self.path + '/' + self.name)
+
 
 def getItemList(path):
   str_file_list = os.listdir(path)

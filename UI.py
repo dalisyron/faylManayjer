@@ -8,7 +8,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
-from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout,QAbstractItemView
+from PyQt5.QtWidgets import QMainWindow,QMessageBox, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout,QAbstractItemView
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 import item,main,os
@@ -34,10 +34,10 @@ class Ui_MainWindow(object):
         self.favoriteView = QtWidgets.QTableView(self.centralwidget)
         self.favoriteView.setGeometry(QtCore.QRect(0, 50, 161, 381))
         self.favoriteView.setObjectName("FavoriteView")
-        self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
-        self.textEdit.insertPlainText('hamidreza')
-        self.textEdit.setGeometry(QtCore.QRect(170, 10, 401, 31))
-        self.textEdit.setObjectName("textEdit")
+        self.directoryTextView = QtWidgets.QTextEdit(self.centralwidget)
+        self.directoryTextView.insertPlainText('hamidreza')
+        self.directoryTextView.setGeometry(QtCore.QRect(170, 10, 401, 31))
+        self.directoryTextView.setObjectName("directoryTextView")
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.clicked.connect(self.onClickGoTo)
         #self.pushButton.clicked.connect("kose nanat",self)
@@ -59,6 +59,16 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+    def refreshDirectory(self,path):
+        self.directoryTextView.setText(main.current_path)
+
+    def showError(self,errorText = None):
+        error_dialog = QMessageBox()
+        error_dialog.setText("ERROR")
+        if errorText != None:
+            error_dialog.setText(errorText)
+        error_dialog.exec()
+
     def showDirectoryContent(self,item_list):
         self.itemsView.setRowCount(len(item_list))
         self.itemsView.setColumnCount(2)
@@ -74,31 +84,36 @@ class Ui_MainWindow(object):
         self.itemsView.move(0,0)
 
     def tableClicked(self,itemm):
-        if itemm.column() == 0:
-            if main.current_path == '/':
-                main.current_path += str(itemm.data())
-            else:
-                main.current_path += '/'+str(itemm.data())
-            if os.path.isdir(main.current_path):
-                main.file_list=item.getItemList(main.current_path)
-                self.showDirectoryContent(main.file_list)
-                self.history.append(main.current_path)
-            else:
-                os.system("open "+ main.current_path)
-                main.current_path = self.history[-1]
+        try:
+            if itemm.column() == 0:
+                if main.current_path == '/':
+                    main.current_path += str(itemm.data())
+                else:
+                    main.current_path += '/'+str(itemm.data())
+                if os.path.isdir(main.current_path):
+                    main.file_list=item.getItemList(main.current_path)
+                    self.showDirectoryContent(main.file_list)
+                    self.history.append(main.current_path)
+                else:
+                    os.system("open "+ main.current_path)
+                    main.current_path = self.history[-1]
+                self.refreshDirectory(main.current_path)
+        except PermissionError:
+            self.showError("Permission dnied!")
+        except :
+            self.showError()
 
-
-    def onClickBack(self,MainWindow):
+    def onClickBack(self,MainWindow):#for back button
         if len(self.history)!= 1:
             self.history.pop()
             main.current_path = self.history[-1]
             main.file_list = item.getItemList(main.current_path)
             self.showDirectoryContent(main.file_list)
-            self.textEdit.setText(main.current_path)
+            self.directoryTextView.setText(main.current_path)
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.directoryTextView.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'.SF NS Text\'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
@@ -106,17 +121,24 @@ class Ui_MainWindow(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.pushButton.setText(_translate("MainWindow", "Go to"))
         self.pushButton_2.setText(_translate("MainWindow", "Back"))
-        self.textEdit.setText(main.current_path)
-    def onClickGoTo(self,MainWindow):
-        mytext = self.textEdit.toPlainText()
-        main.current_path = mytext
-        if os.path.isdir(mytext):
-            main.file_list=item.getItemList(mytext)
-            self.showDirectoryContent(main.file_list)
-            self.history.append(main.current_path)
+        self.directoryTextView.setText(main.current_path)
+    def onClickGoTo(self,MainWindow):#for go to button
+        if os.path.exists(self.directoryTextView.toPlainText()):
+            try:
+                mytext = self.directoryTextView.toPlainText()
+                main.current_path = mytext
+                if os.path.isdir(mytext):
+                    main.file_list=item.getItemList(mytext)
+                    self.showDirectoryContent(main.file_list)
+                    self.history.append(main.current_path)
+                else:
+                    os.system("open "+ main.current_path)
+                    main.current_path = self.history[-1]
+            except:
+                self.showError()
         else:
-            os.system("open "+ main.current_path)
-            main.current_path = self.history[-1]
+            self.showError(self.directoryTextView.toPlainText()+" does not exist!")
+
 
 
 

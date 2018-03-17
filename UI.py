@@ -62,10 +62,13 @@ class Ui_MainWindow(object):
         self.itemsView.setRowCount(len(item_list))
         self.itemsView.setColumnCount(2)
         self.itemsView.autoFillBackground()
-
+        fileIcon = QtGui.QIcon(QtGui.QPixmap("fileIcon.png"))
+        folderIcon = QtGui.QIcon(QtGui.QPixmap("folderIcon.png"))
         for i in range(len(item_list)):
-         #   print('{}{}{}'.format(i.name, ' ' * (mx + 5 - len(i.name)), i.date))
-            self.itemsView.setItem(i, 0, QTableWidgetItem(item_list[i].name))
+            icon = fileIcon
+            if os.path.isdir(item_list[i].path+"/"+item_list[i].name):
+                icon = folderIcon
+            self.itemsView.setItem(i, 0, QTableWidgetItem(icon,item_list[i].name))
             self.itemsView.setItem(i,1 , QTableWidgetItem(item_list[i].date))
         self.itemsView.move(0,0)
     def tableClicked(self,itemm):

@@ -8,7 +8,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
-from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout,QAbstractItemView
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 import item,main,os
@@ -28,7 +28,8 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.itemsView = QtWidgets.QTableWidget(self.verticalLayoutWidget)
         self.itemsView.setObjectName("itemsView")
-        self.itemsView.clicked.connect(self.tableClicked)
+        self.itemsView.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.itemsView.doubleClicked.connect(self.tableClicked)
         self.verticalLayout.addWidget(self.itemsView)
         self.favoriteView = QtWidgets.QTableView(self.centralwidget)
         self.favoriteView.setGeometry(QtCore.QRect(0, 50, 161, 381))
@@ -71,26 +72,29 @@ class Ui_MainWindow(object):
             self.itemsView.setItem(i, 0, QTableWidgetItem(icon,item_list[i].name))
             self.itemsView.setItem(i,1 , QTableWidgetItem(item_list[i].date))
         self.itemsView.move(0,0)
+
     def tableClicked(self,itemm):
-        if main.current_path == '/':
-            main.current_path += str(itemm.data())
-        else:
-            main.current_path += '/'+str(itemm.data())
-        if os.path.isdir(main.current_path):
-            main.file_list=item.getItemList(main.current_path)
-            self.showDirectoryContent(main.file_list)
-            self.history.append(main.current_path)
-        else:
-            os.system("open "+ main.current_path)
-            main.current_path = self.history[-1]
+        if itemm.column() == 0:
+            if main.current_path == '/':
+                main.current_path += str(itemm.data())
+            else:
+                main.current_path += '/'+str(itemm.data())
+            if os.path.isdir(main.current_path):
+                main.file_list=item.getItemList(main.current_path)
+                self.showDirectoryContent(main.file_list)
+                self.history.append(main.current_path)
+            else:
+                os.system("open "+ main.current_path)
+                main.current_path = self.history[-1]
 
 
     def onClickBack(self,MainWindow):
-        self.history.pop()
-        main.current_path = self.history[-1]
-        main.file_list = item.getItemList(main.current_path)
-        self.showDirectoryContent(main.file_list)
-        self.textEdit.setText(main.current_path)
+        if len(self.history)!= 1:
+            self.history.pop()
+            main.current_path = self.history[-1]
+            main.file_list = item.getItemList(main.current_path)
+            self.showDirectoryContent(main.file_list)
+            self.textEdit.setText(main.current_path)
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))

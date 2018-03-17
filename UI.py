@@ -11,12 +11,13 @@ import sys
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
-import item,main
+import item,main,os
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(700, 493)
+        self.history = ['/']
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
@@ -27,19 +28,24 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.itemsView = QtWidgets.QTableWidget(self.verticalLayoutWidget)
         self.itemsView.setObjectName("itemsView")
+        self.itemsView.clicked.connect(self.tableClicked)
         self.verticalLayout.addWidget(self.itemsView)
         self.favoriteView = QtWidgets.QTableView(self.centralwidget)
         self.favoriteView.setGeometry(QtCore.QRect(0, 50, 161, 381))
         self.favoriteView.setObjectName("FavoriteView")
         self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
+        self.textEdit.insertPlainText('hamidreza')
         self.textEdit.setGeometry(QtCore.QRect(170, 10, 401, 31))
         self.textEdit.setObjectName("textEdit")
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton.clicked.connect(self.onClickGoTo)
+        #self.pushButton.clicked.connect("kose nanat",self)
         self.pushButton.setGeometry(QtCore.QRect(580, 10, 110, 32))
-        self.pushButton.setObjectName("pushButton")
-        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
+       # self.pushButton.setObjectName("pushButton")
+        self.pushButton_2 = QtWidgets.QPushButton('back',self.centralwidget)
         self.pushButton_2.setGeometry(QtCore.QRect(30, 10, 110, 32))
-        self.pushButton_2.setObjectName("pushButton_2")
+        self.pushButton_2.clicked.connect(self.onClickBack)
+        #self.pushButton_2.setObjectName("pushButton_2")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 700, 22))
@@ -48,7 +54,7 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        
+
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -62,7 +68,26 @@ class Ui_MainWindow(object):
             self.itemsView.setItem(i, 0, QTableWidgetItem(item_list[i].name))
             self.itemsView.setItem(i,1 , QTableWidgetItem(item_list[i].date))
         self.itemsView.move(0,0)
+    def tableClicked(self,itemm):
+        if main.current_path == '/':
+            main.current_path += str(itemm.data())
+        else:
+            main.current_path += '/'+str(itemm.data())
+        if os.path.isdir(main.current_path):
+            main.file_list=item.getItemList(main.current_path)
+            self.showDirectoryContent(main.file_list)
+            self.history.append(main.current_path)
+        else:
+            os.system("open "+ main.current_path)
+            main.current_path = self.history[-1]
 
+
+    def onClickBack(self,MainWindow):
+        self.history.pop()
+        main.current_path = self.history[-1]
+        main.file_list = item.getItemList(main.current_path)
+        self.showDirectoryContent(main.file_list)
+        self.textEdit.setText(main.current_path)
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -74,6 +99,18 @@ class Ui_MainWindow(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.pushButton.setText(_translate("MainWindow", "Go to"))
         self.pushButton_2.setText(_translate("MainWindow", "Back"))
+        self.textEdit.setText(main.current_path)
+    def onClickGoTo(self,MainWindow):
+        mytext = self.textEdit.toPlainText()
+        main.current_path = mytext
+        if os.path.isdir(mytext):
+            main.file_list=item.getItemList(mytext)
+            self.showDirectoryContent(main.file_list)
+            self.history.append(main.current_path)
+        else:
+            os.system("open "+ main.current_path)
+            main.current_path = self.history[-1]
+
 
 
 if __name__ == "__main__":
@@ -87,5 +124,6 @@ if __name__ == "__main__":
     ui.showDirectoryContent(main.file_list)
 
     MainWindow.show()
+    #print(main.current_path)
     sys.exit(app.exec_())
 

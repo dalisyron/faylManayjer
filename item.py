@@ -9,12 +9,12 @@ class Item:
     self.date = date
     self.par_item = par_item
   def copy(self,destination):
-    if os.path.splitext(self.path + '/' + self.name)[1] == '':
+    if os.path.isdir(self.path + '/' + self.name):
       shutil.copytree(self.path + '/' + self.name, destination + '/' + self.name)
     else:
       shutil.copyfile(self.path + '/' + self.name, destination + '/' + self.name)
   def delete(self):
-    if os.path.splitext(self.path + '/' + self.name)[1] == '':
+    if os.path.isdir(self.path + '/' + self.name):
       shutil.rmtree(self.path + '/' + self.name)
     else:
       os.remove(self.path + '/' + self.name)

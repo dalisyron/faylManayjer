@@ -11,13 +11,14 @@ import sys
 from PyQt5.QtWidgets import QMainWindow,QMessageBox, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout,QAbstractItemView,QMenu
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
-import item,main,os
+import item,main,os,time
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(700, 503)
         self.history = ['/']
+        self.selected_items = []
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
@@ -54,6 +55,7 @@ class Ui_MainWindow(object):
         self.copyButton.setGeometry(QtCore.QRect(300, 430, 110, 32))
         self.copyButton.setObjectName("copyButton")
         self.copyButton.setText("Copy")
+        self.copyButton.clicked.connect(self.copyEvent)
         self.cutButton = QtWidgets.QPushButton(self.centralwidget)
         self.cutButton.setGeometry(QtCore.QRect(430, 430, 110, 32))
         self.cutButton.setObjectName("cutButton")
@@ -62,6 +64,7 @@ class Ui_MainWindow(object):
         self.pasteButton.setGeometry(QtCore.QRect(550, 430, 110, 32))
         self.pasteButton.setObjectName("pasteButton")
         self.pasteButton.setText("Paste")
+        self.pasteButton.clicked.connect(self.pasteEvent)
         #self.pushButton_2.setObjectName("pushButton_2")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -74,6 +77,18 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+    def copyEvent(self):
+         self.selected_items = []
+         for i in self.itemsView.selectedItems():
+             self.selected_items.append(item.Item(main.current_path , i.text(), time.ctime(os.path.getmtime(main.current_path + '/' +i.text())), os.path.getsize(main.current_path + '/' + i.text())))
+
+        #print(self.itemsView.selectedItems()[0].text())
+    def pasteEvent(self):
+        for i in self.selected_items:
+            i.copy(main.current_path)
+        main.file_list = item.getItemList(main.current_path)
+        self.showDirectoryContent(main.file_list)
+
 
     def refreshDirectory(self,path):
         self.directoryTextView.setText(main.current_path)

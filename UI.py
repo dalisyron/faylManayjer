@@ -42,9 +42,7 @@ class Ui_MainWindow(object):
         self.directoryTextView.setObjectName("directoryTextView")
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.clicked.connect(self.onClickGoTo)
-        #self.pushButton.clicked.connect("kose nanat",self)
         self.pushButton.setGeometry(QtCore.QRect(580, 10, 110, 32))
-       # self.pushButton.setObjectName("pushButton")
         self.pushButton_2 = QtWidgets.QPushButton('back',self.centralwidget)
         self.pushButton_2.setGeometry(QtCore.QRect(30, 10, 110, 32))
         self.pushButton_2.clicked.connect(self.onClickBack)
@@ -52,6 +50,7 @@ class Ui_MainWindow(object):
         self.newFolderButton.setGeometry(QtCore.QRect(170, 430, 110, 32))
         self.newFolderButton.setObjectName("newFolderButton")
         self.newFolderButton.setText("New Folder")
+        self.newFolderButton.clicked.connect(self.newFolderEvent)
         self.copyButton = QtWidgets.QPushButton(self.centralwidget)
         self.copyButton.setGeometry(QtCore.QRect(300, 430, 110, 32))
         self.copyButton.setObjectName("copyButton")
@@ -76,40 +75,69 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def newFolderEvent(self):
+        try:
+            name = "New Folder"
+            if os.path.exists(main.current_path+'/'+name):
+                i = 1
+                while os.path.exists(main.current_path+'/'+name+str(i)):
+                    i+=1
+                os.makedirs(main.current_path + '/' + name+str(i))
+            else:
+                os.makedirs(main.current_path+'/'+name)
+            main.file_list = item.getItemList(main.current_path)
+            self.showDirectoryContent(main.file_list)
+        except PermissionError:
+            self.showError("Permission denied!")
+        except:
+            self.showError()
     def copyEvent(self):
-         self.selected_items = []
-         self.cut_selected_items = []
-         for i in self.itemsView.selectedItems():
-             self.selected_items.append(item.Item(main.current_path , i.text(), time.ctime(os.path.getmtime(main.current_path + '/' +i.text())), os.path.getsize(main.current_path + '/' + i.text())))
+        try:
+            self.selected_items = []
+            self.cut_selected_items = []
+            for i in self.itemsView.selectedItems():
+                self.selected_items.append(item.Item(main.current_path , i.text(), time.ctime(os.path.getmtime(main.current_path + '/' +i.text())), os.path.getsize(main.current_path + '/' + i.text())))
+        except PermissionError:
+            self.showError("Permission denied!")
+        except :
+            self.showError()
 
         #print(self.itemsView.selectedItems()[0].text())
     def pasteEvent(self):
-        for i in self.selected_items:
-            i.copy(main.current_path)
-        if self.cut_selected_items and main.current_path != self.cut_selected_items[0].path:
-            for i in self.cut_selected_items:
+        try:
+            for i in self.selected_items:
                 i.copy(main.current_path)
-                i.delete()
-        main.file_list = item.getItemList(main.current_path)
-        self.showDirectoryContent(main.file_list)
-    def cutEvent(self):
-        self.selected_items = []
-        self.cut_selected_items = []
-        for i in self.itemsView.selectedItems():
-            self.cut_selected_items.append(
-                item.Item(main.current_path, i.text(), time.ctime(os.path.getmtime(main.current_path + '/' + i.text())),
-                          os.path.getsize(main.current_path + '/' + i.text())))
+            if self.cut_selected_items and main.current_path != self.cut_selected_items[0].path:
+                for i in self.cut_selected_items:
+                    i.copy(main.current_path)
+                    i.delete()
+            main.file_list = item.getItemList(main.current_path)
+            self.showDirectoryContent(main.file_list)
+        except:
+            self.showError()
 
+    def cutEvent(self):
+        try:
+            self.selected_items = []
+            self.cut_selected_items = []
+            for i in self.itemsView.selectedItems():
+                self.cut_selected_items.append(
+                    item.Item(main.current_path, i.text(), time.ctime(os.path.getmtime(main.current_path + '/' + i.text())),
+                              os.path.getsize(main.current_path + '/' + i.text())))
+        except PermissionError:
+            self.showError("Permission denied!")
+        except :
+            self.showError()
 
     def refreshDirectory(self,path):
         self.directoryTextView.setText(main.current_path)
 
     def showError(self,errorText = None):
         error_dialog = QMessageBox()
-        error_dialog.setText("ERROR")
+        error_dialog.setText("An error has occurred.")
         if errorText != None:
             error_dialog.setText(errorText)
         error_dialog.exec()
@@ -198,6 +226,8 @@ class Ui_MainWindow(object):
                 else:
                     os.system("open "+ main.current_path)
                     main.current_path = self.history[-1]
+            except PermissionError:
+                self.showError("Permission denied!")
             except:
                 self.showError()
         else:

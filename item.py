@@ -22,8 +22,8 @@ class Item:
             shutil.rmtree(self.path + '/' + self.name)
         else:
             os.remove(self.path + '/' + self.name)
-
-
+    def rename(self,new_name):
+        os.rename(self.path+'/'+self.name ,self.path+'/'+new_name)
 def getItemList(path):
     str_file_list = os.listdir(path)
     result = []

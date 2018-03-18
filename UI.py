@@ -8,7 +8,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
-from PyQt5.QtWidgets import QMainWindow,QMessageBox, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout,QAbstractItemView
+from PyQt5.QtWidgets import QMainWindow,QMessageBox, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout,QAbstractItemView,QMenu
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 import item,main,os
@@ -113,7 +113,7 @@ class Ui_MainWindow(object):
                     main.current_path = self.history[-1]
                 self.refreshDirectory(main.current_path)
         except PermissionError:
-            self.showError("Permission dnied!")
+            self.showError("Permission denied!")
         except :
             self.showError()
 
@@ -144,6 +144,11 @@ class Ui_MainWindow(object):
                 if os.path.isdir(mytext):
                     main.file_list=item.getItemList(mytext)
                     self.showDirectoryContent(main.file_list)
+                    if main.current_path.split('/')[-1] == "..":
+                        main.current_path = '/'.join(main.current_path.split('/')[:-2])
+                        if main.current_path == '':
+                            main.current_path = '/'
+                        self.directoryTextView.setText(main.current_path)
                     self.history.append(main.current_path)
                 else:
                     os.system("open "+ main.current_path)

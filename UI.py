@@ -17,8 +17,9 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(700, 503)
-        self.history = ['/']
+        self.history = [main.current_path]
         self.selected_items = []
+        self.cut_selected_items = []
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
@@ -60,6 +61,7 @@ class Ui_MainWindow(object):
         self.cutButton.setGeometry(QtCore.QRect(430, 430, 110, 32))
         self.cutButton.setObjectName("cutButton")
         self.cutButton.setText("Cut")
+        self.cutButton.clicked.connect(self.cutEvent)
         self.pasteButton = QtWidgets.QPushButton(self.centralwidget)
         self.pasteButton.setGeometry(QtCore.QRect(550, 430, 110, 32))
         self.pasteButton.setObjectName("pasteButton")
@@ -79,6 +81,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
     def copyEvent(self):
          self.selected_items = []
+         self.cut_selected_items = []
          for i in self.itemsView.selectedItems():
              self.selected_items.append(item.Item(main.current_path , i.text(), time.ctime(os.path.getmtime(main.current_path + '/' +i.text())), os.path.getsize(main.current_path + '/' + i.text())))
 
@@ -86,8 +89,19 @@ class Ui_MainWindow(object):
     def pasteEvent(self):
         for i in self.selected_items:
             i.copy(main.current_path)
+        if self.cut_selected_items and main.current_path != self.cut_selected_items[0].path:
+            for i in self.cut_selected_items:
+                i.copy(main.current_path)
+                i.delete()
         main.file_list = item.getItemList(main.current_path)
         self.showDirectoryContent(main.file_list)
+    def cutEvent(self):
+        self.selected_items = []
+        self.cut_selected_items = []
+        for i in self.itemsView.selectedItems():
+            self.cut_selected_items.append(
+                item.Item(main.current_path, i.text(), time.ctime(os.path.getmtime(main.current_path + '/' + i.text())),
+                          os.path.getsize(main.current_path + '/' + i.text())))
 
 
     def refreshDirectory(self,path):

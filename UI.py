@@ -71,7 +71,8 @@ class Ui_MainWindow(object):
 
     def showDirectoryContent(self,item_list):
         self.itemsView.setRowCount(len(item_list))
-        self.itemsView.setColumnCount(2)
+        self.itemsView.setColumnCount(3)
+        self.itemsView.setHorizontalHeaderLabels(("Name","Date Modified","Size"))
         self.itemsView.autoFillBackground()
         fileIcon = QtGui.QIcon(QtGui.QPixmap("fileIcon.png"))
         folderIcon = QtGui.QIcon(QtGui.QPixmap("folderIcon.png"))
@@ -81,6 +82,19 @@ class Ui_MainWindow(object):
                 icon = folderIcon
             self.itemsView.setItem(i, 0, QTableWidgetItem(icon,item_list[i].name))
             self.itemsView.setItem(i,1 , QTableWidgetItem(item_list[i].date))
+            if icon == folderIcon:
+                self.itemsView.setItem(i,2,QTableWidgetItem("--"))
+            else:
+                if item_list[i].size // 1000000000 != 0:
+                    size = str(round(item_list[i].size/1000000000,2)) + " GB"
+                elif item_list[i].size // 1000000 != 0:
+                    size = str(round(item_list[i].size/1000000,2)) + " MB"
+                elif item_list[i].size // 1000 != 0:
+                    size = str(round(item_list[i].size /1000,2)) + " KB"
+                else :
+                    size = str(item_list[i].size) + " B"
+                self.itemsView.setItem(i,2,QTableWidgetItem(size))
+        self.itemsView.resizeColumnsToContents()
         self.itemsView.move(0,0)
 
     def tableClicked(self,itemm):

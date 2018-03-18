@@ -20,6 +20,7 @@ class Ui_MainWindow(object):
         self.history = [main.current_path]
         self.selected_items = []
         self.cut_selected_items = []
+        self.favorite_list = []
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
@@ -33,8 +34,11 @@ class Ui_MainWindow(object):
         self.itemsView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.itemsView.doubleClicked.connect(self.tableClicked)
         self.verticalLayout.addWidget(self.itemsView)
-        self.favoriteView = QtWidgets.QTableView(self.centralwidget)
-        self.favoriteView.setGeometry(QtCore.QRect(0, 50, 161, 381))
+        self.favoriteView = QtWidgets.QTableWidget(self.centralwidget)
+        self.favoriteView.setGeometry(QtCore.QRect(0, 70, 161, 341))
+        self.favoriteView.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.favoriteView.setVerticalHeaderLabels(())
+        self.favoriteView.doubleClicked.connect(self.favoriteTableClicked)
         self.favoriteView.setObjectName("FavoriteView")
         self.directoryTextView = QtWidgets.QTextEdit(self.centralwidget)
         self.directoryTextView.insertPlainText('hamidreza')
@@ -66,6 +70,16 @@ class Ui_MainWindow(object):
         self.pasteButton.setObjectName("pasteButton")
         self.pasteButton.setText("Paste")
         self.pasteButton.clicked.connect(self.pasteEvent)
+        self.favoriteLabel = QtWidgets.QLabel(self.centralwidget)
+        self.favoriteLabel.setGeometry(QtCore.QRect(55, 50, 81, 16))
+        self.favoriteLabel.setObjectName("favoriteLabel")
+        self.favoriteLabel.setText("Favorites")
+        self.addButton = QtWidgets.QToolButton(self.centralwidget)
+        self.addButton.setGeometry(QtCore.QRect(0, 410, 161, 21))
+        self.addButton.setObjectName("addButton")
+        self.addButton.setText("Add to favorites")
+        self.addButton.clicked.connect(self.addEvent)
+
         #self.pushButton_2.setObjectName("pushButton_2")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -77,6 +91,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
 
     def newFolderEvent(self):
         try:
@@ -142,6 +157,37 @@ class Ui_MainWindow(object):
             error_dialog.setText(errorText)
         error_dialog.exec()
 
+    def favoriteTableClicked(self,itemm):
+        path = self.favorite_list[itemm.row()]
+        if os.path.exists(path):
+            try:
+                mytext = path
+                main.current_path = mytext
+                main.file_list=item.getItemList(mytext)
+                self.showDirectoryContent(main.file_list)
+                self.directoryTextView.setText(main.current_path)
+                self.history.append(main.current_path)
+            except PermissionError:
+                self.showError("Permission denied!")
+            except:
+                self.showError()
+        else:
+            self.showError(path+" does not exist!")
+
+    def addEvent(self):
+        self.favorite_list.append(main.current_path)
+        self.showFavorites()
+
+    def showFavorites(self):
+        self.favoriteView.setRowCount(len(self.favorite_list))
+        self.favoriteView.setColumnCount(1)
+        self.favoriteView.setHorizontalHeaderLabels(["Name"])
+        icon = QtGui.QIcon(QtGui.QPixmap("favorite.png"))
+        for i in range(len(self.favorite_list)):
+            self.favoriteView.setItem(i,0,QTableWidgetItem(icon,self.favorite_list[i].split('/')[-1]))
+        self.itemsView.move(0, 0)
+
+
     def showDirectoryContent(self,item_list):
         self.itemsView.setRowCount(len(item_list))
         self.itemsView.setColumnCount(3)
@@ -171,6 +217,7 @@ class Ui_MainWindow(object):
         self.itemsView.move(0,0)
 
     def tableClicked(self,itemm):
+        c_path = main.current_path
         try:
             if itemm.column() == 0:
                 if main.current_path == '/':
@@ -187,8 +234,13 @@ class Ui_MainWindow(object):
                 self.refreshDirectory(main.current_path)
         except PermissionError:
             self.showError("Permission denied!")
+            main.current_path = c_path
+            main.file_list = item.getItemList(main.current_path)
+
         except :
             self.showError()
+            main.current_path = c_path
+            main.file_list = item.getItemList(main.current_path)
 
     def onClickBack(self,MainWindow):#for back button
         if len(self.history)!= 1:
@@ -197,6 +249,7 @@ class Ui_MainWindow(object):
             main.file_list = item.getItemList(main.current_path)
             self.showDirectoryContent(main.file_list)
             self.directoryTextView.setText(main.current_path)
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -209,6 +262,7 @@ class Ui_MainWindow(object):
         self.pushButton.setText(_translate("MainWindow", "Go to"))
         self.pushButton_2.setText(_translate("MainWindow", "Back"))
         self.directoryTextView.setText(main.current_path)
+
     def onClickGoTo(self,MainWindow):#for go to button
         if os.path.exists(self.directoryTextView.toPlainText()):
             try:

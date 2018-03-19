@@ -18,6 +18,10 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(700, 503)
         QShortcut(QtGui.QKeySequence("Backspace"), MainWindow, self.onClickBack)
+        QShortcut(QtGui.QKeySequence("Return"), MainWindow, self.onClickGoTo)
+        QShortcut(QtGui.QKeySequence("CTRL+c"), MainWindow, self.copyEvent)
+        QShortcut(QtGui.QKeySequence("CTRL+v"), MainWindow, self.pasteEvent)
+        QShortcut(QtGui.QKeySequence("CTRL+x"), MainWindow, self.cutEvent)
         self.history = [main.current_path]
         self.selected_items = []
         self.cut_selected_items = []

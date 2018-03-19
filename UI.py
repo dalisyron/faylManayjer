@@ -86,6 +86,12 @@ class Ui_MainWindow(object):
         self.addButton.setObjectName("addButton")
         self.addButton.setText("Add to favorites")
         self.addButton.clicked.connect(self.addEvent)
+        self.removeFavoriteButton = QtWidgets.QToolButton(self.centralwidget)
+        self.removeFavoriteButton.setGeometry(QtCore.QRect(0, 430, 161, 21))
+        self.removeFavoriteButton.setObjectName("removeFavoriteButton")
+        self.removeFavoriteButton.setText("Remove from favorites")
+        self.removeFavoriteButton.clicked.connect(self.removeFavoriteEvent)
+
 
         #self.pushButton_2.setObjectName("pushButton_2")
         MainWindow.setCentralWidget(self.centralwidget)
@@ -100,15 +106,32 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def deleteEvent(self):
-        self.selected_items = []
-        for i in self.itemsView.selectedItems():
-            self.selected_items.append(
-                item.Item(main.current_path, i.text(), time.ctime(os.path.getmtime(main.current_path + '/' + i.text())),
-                          os.path.getsize(main.current_path + '/' + i.text())))
-        for i in self.selected_items:
-            i.delete()
-        main.file_list = item.getItemList(main.current_path)
-        self.showDirectoryContent(main.file_list)
+        try:
+            self.selected_items = []
+            for i in self.itemsView.selectedItems():
+                self.selected_items.append(
+                    item.Item(main.current_path, i.text(), time.ctime(os.path.getmtime(main.current_path + '/' + i.text())),
+                              os.path.getsize(main.current_path + '/' + i.text())))
+            for i in self.selected_items:
+                i.delete()
+            main.file_list = item.getItemList(main.current_path)
+            self.showDirectoryContent(main.file_list)
+        except PermissionError:
+            self.showError("Permission denied!")
+        except:
+            self.showError()
+
+    def removeFavoriteEvent(self):
+        s_i =[]
+        new_favorites = []
+        for i in self.favoriteView.selectedItems():
+            s_i.append(i.row())
+
+        for i in range(len(self.favorite_list)):
+            if i not in s_i:
+                new_favorites.append(self.favorite_list[i])
+        self.favorite_list = new_favorites
+        self.showFavorites()
 
 
     def newFolderEvent(self):

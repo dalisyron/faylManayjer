@@ -250,7 +250,15 @@ class Ui_MainWindow(object):
                     self.showDirectoryContent(main.file_list)
                     self.history.append(main.current_path)
                 else:
-                    os.system("open "+ main.current_path)
+                    if sys.platform == 'darwin':
+                        c_p = main.current_path.split(' ')
+                        c_p='\\ '.join(c_p)
+                        print(c_p)
+                        os.system("open " + c_p)
+                    if sys.platform == 'win32' or sys.platform=='cygwin':
+                        os.system("start "+ main.current_path)
+                    if sys.platform == 'linux2':
+                        os.system(".\\ '"+main.current_path+"'")
                     main.current_path = self.history[-1]
                 self.refreshDirectory(main.current_path)
         except PermissionError:
@@ -259,6 +267,7 @@ class Ui_MainWindow(object):
             main.file_list = item.getItemList(main.current_path)
 
         except :
+            raise
             self.showError()
             main.current_path = c_path
             main.file_list = item.getItemList(main.current_path)
@@ -293,13 +302,21 @@ class Ui_MainWindow(object):
                     main.file_list=item.getItemList(mytext)
                     self.showDirectoryContent(main.file_list)
                     if main.current_path.split('/')[-1] == "..":
-                        main.current_path = '/'.join(main.current_path.split('/')[:-2])
+                        main.current_path = '/'.joint(main.current_path.split('/')[:-2])
                         if main.current_path == '':
                             main.current_path = '/'
                         self.directoryTextView.setText(main.current_path)
                     self.history.append(main.current_path)
                 else:
-                    os.system("open "+ main.current_path)
+                    if sys.platform == 'darwin':
+                        c_p = main.current_path.split(' ')
+                        c_p='\\ '.join(c_p)
+                        print(c_p)
+                        os.system("open " + c_p)
+                    if sys.platform == 'win32' or sys.platform=='cygwin':
+                        os.startfile(main.current_path)
+                    if sys.platform == 'linux2':
+                        os.system(".\\ '"+main.current_path+"'")
                     main.current_path = self.history[-1]
             except PermissionError:
                 self.showError("Permission denied!")

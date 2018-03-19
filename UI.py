@@ -264,7 +264,7 @@ class Ui_MainWindow(object):
         self.pushButton_2.setText(_translate("MainWindow", "Back"))
         self.directoryTextView.setText(main.current_path)
 
-    def onClickGoTo(self,MainWindow):#for go to button
+    def onClickGoTo(self):#for go to button
         if os.path.exists(self.directoryTextView.toPlainText()):
             try:
                 mytext = self.directoryTextView.toPlainText()

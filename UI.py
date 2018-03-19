@@ -23,6 +23,7 @@ class Ui_MainWindow(object):
         QShortcut(QtGui.QKeySequence("CTRL+v"), MainWindow, self.pasteEvent)
         QShortcut(QtGui.QKeySequence("CTRL+x"), MainWindow, self.cutEvent)
         QShortcut(QtGui.QKeySequence("CTRL+n"), MainWindow, self.newFolderEvent)
+        QShortcut(QtGui.QKeySequence("CTRL+Backspace"), MainWindow, self.deleteEvent)
         self.history = [main.current_path]
         self.selected_items = []
         self.cut_selected_items = []
@@ -98,6 +99,17 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+    def deleteEvent(self):
+        self.selected_items = []
+        for i in self.itemsView.selectedItems():
+            self.selected_items.append(
+                item.Item(main.current_path, i.text(), time.ctime(os.path.getmtime(main.current_path + '/' + i.text())),
+                          os.path.getsize(main.current_path + '/' + i.text())))
+        for i in self.selected_items:
+            i.delete()
+        main.file_list = item.getItemList(main.current_path)
+        self.showDirectoryContent(main.file_list)
+
 
     def newFolderEvent(self):
         try:
@@ -105,15 +117,15 @@ class Ui_MainWindow(object):
             text, okPressed = QInputDialog.getText(MainWindow, "Get Name", "Name:", QLineEdit.Normal, name)
             if okPressed and text != '':
                 name  = text
-            if os.path.exists(main.current_path+'/'+name):
-                i = 1
-                while os.path.exists(main.current_path + '/' + name+ ' (' + str(i) + ')'):
-                    i+=1
-                os.makedirs(main.current_path + '/' + name+ ' (' + str(i) + ')')
-            else:
-                os.makedirs(main.current_path+'/'+name)
-            main.file_list = item.getItemList(main.current_path)
-            self.showDirectoryContent(main.file_list)
+                if os.path.exists(main.current_path+'/'+name):
+                    i = 1
+                    while os.path.exists(main.current_path + '/' + name+ ' (' + str(i) + ')'):
+                        i+=1
+                    os.makedirs(main.current_path + '/' + name+ ' (' + str(i) + ')')
+                else:
+                    os.makedirs(main.current_path+'/'+name)
+                main.file_list = item.getItemList(main.current_path)
+                self.showDirectoryContent(main.file_list)
         except PermissionError:
             self.showError("Permission denied!")
         except:

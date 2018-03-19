@@ -98,9 +98,9 @@ class Ui_MainWindow(object):
             name = "New Folder"
             if os.path.exists(main.current_path+'/'+name):
                 i = 1
-                while os.path.exists(main.current_path+'/'+name+str(i)):
+                while os.path.exists(main.current_path+'/'+ ' (' + name+str(i) + ')'):
                     i+=1
-                os.makedirs(main.current_path + '/' + name+str(i))
+                os.makedirs(main.current_path + '/' + name+ ' (' + str(i) + ')')
             else:
                 os.makedirs(main.current_path+'/'+name)
             main.file_list = item.getItemList(main.current_path)

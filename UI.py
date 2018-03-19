@@ -8,7 +8,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
-from PyQt5.QtWidgets import QShortcut, QMainWindow,QMessageBox, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout,QAbstractItemView,QMenu
+from PyQt5.QtWidgets import QShortcut, QMainWindow,QMessageBox, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout,QAbstractItemView,QMenu,QInputDialog,QLineEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 import item,main,os,time
@@ -22,6 +22,7 @@ class Ui_MainWindow(object):
         QShortcut(QtGui.QKeySequence("CTRL+c"), MainWindow, self.copyEvent)
         QShortcut(QtGui.QKeySequence("CTRL+v"), MainWindow, self.pasteEvent)
         QShortcut(QtGui.QKeySequence("CTRL+x"), MainWindow, self.cutEvent)
+        QShortcut(QtGui.QKeySequence("CTRL+n"), MainWindow, self.newFolderEvent)
         self.history = [main.current_path]
         self.selected_items = []
         self.cut_selected_items = []
@@ -101,9 +102,12 @@ class Ui_MainWindow(object):
     def newFolderEvent(self):
         try:
             name = "New Folder"
+            text, okPressed = QInputDialog.getText(MainWindow, "Get Name", "Name:", QLineEdit.Normal, name)
+            if okPressed and text != '':
+                name  = text
             if os.path.exists(main.current_path+'/'+name):
                 i = 1
-                while os.path.exists(main.current_path+'/'+ ' (' + name+str(i) + ')'):
+                while os.path.exists(main.current_path + '/' + name+ ' (' + str(i) + ')'):
                     i+=1
                 os.makedirs(main.current_path + '/' + name+ ' (' + str(i) + ')')
             else:

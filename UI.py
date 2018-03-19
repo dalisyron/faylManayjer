@@ -242,7 +242,7 @@ class Ui_MainWindow(object):
             main.current_path = c_path
             main.file_list = item.getItemList(main.current_path)
 
-    def onClickBack(self,MainWindow):#for back button
+    def onClickBack(self):#for back button
         if len(self.history)!= 1:
             self.history.pop()
             main.current_path = self.history[-1]

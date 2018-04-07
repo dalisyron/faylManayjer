@@ -166,17 +166,14 @@ class Ui_MainWindow(object):
 
         #print(self.itemsView.selectedItems()[0].text())
     def pasteEvent(self):
-        try:
-            for i in self.selected_items:
-                i.copy(main.current_path)
-            if self.cut_selected_items and main.current_path != self.cut_selected_items[0].path:
-                for i in self.cut_selected_items:
-                    i.copy(main.current_path)
-                    i.delete()
-            main.file_list = item.getItemList(main.current_path)
-            self.showDirectoryContent(main.file_list)
-        except:
-            self.showError()
+          for i in self.selected_items:
+              i.copy(main.current_path, False)
+          if self.cut_selected_items and main.current_path != self.cut_selected_items[0].path:
+              for i in self.cut_selected_items:
+                  i.copy(main.current_path, True)
+                  i.delete()
+          main.file_list = item.getItemList(main.current_path)
+          self.showDirectoryContent(main.file_list)
 
     def cutEvent(self):
         try:

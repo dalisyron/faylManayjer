@@ -11,11 +11,16 @@ class Item:
         self.size = size
         self.par_item = par_item
 
-    def copy(self, destination):
+    def copy(self, destination, cut_flag):
+        new_name = self.name
         if os.path.isdir(self.path + '/' + self.name):
-            shutil.copytree(self.path + '/' + self.name, destination + '/' + self.name)
+            while (os.path.exists(destination + '/' + new_name)):
+                new_name = rename_copy(new_name)
+            shutil.copytree(self.path + '/' + self.name, destination + '/' + new_name)
         else:
-            shutil.copyfile(self.path + '/' + self.name, destination + '/' + self.name)
+            while (os.path.exists(destination + '/' + new_name)):
+                new_name = rename_copy(new_name)
+            shutil.copyfile(self.path + '/' + self.name, destination + '/' + new_name)
 
     def delete(self):
         if os.path.isdir(self.path + '/' + self.name):
@@ -35,3 +40,7 @@ def getItemList(path):
         tmp_item = Item(path, i, time.ctime(os.path.getmtime(path + slash + i)), os.path.getsize(path + slash + i))
         result.append(tmp_item)
     return result
+
+def rename_copy(dir_name):
+    desc_list = dir_name.split('.')
+    return desc_list[0] + ' (Copy).' + ''.join(desc_list[1:])

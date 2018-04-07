@@ -28,6 +28,10 @@ def getItemList(path):
     str_file_list = os.listdir(path)
     result = []
     for i in str_file_list:
-        tmp_item = Item(path, i, time.ctime(os.path.getmtime(path + '/' + i)), os.path.getsize(path + '/' + i))
+        #tmp_item = Item(path, i, time.ctime(os.path.getmtime(path + '/' + i)), os.path.getsize(path + '/' + i))
+        slash = '/'
+        if (path == '/'):
+            slash = ''
+        tmp_item = Item(path, i, time.ctime(os.path.getmtime(path + slash + i)), os.path.getsize(path + slash + i))
         result.append(tmp_item)
     return result

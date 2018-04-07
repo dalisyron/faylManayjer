@@ -241,7 +241,10 @@ class Ui_MainWindow(object):
         folderIcon = QtGui.QIcon(QtGui.QPixmap("folderIcon.png"))
         for i in range(len(item_list)):
             icon = fileIcon
-            if os.path.isdir(item_list[i].path+"/"+item_list[i].name):
+            slash = '/'
+            if (item_list[i].path == '/'):
+                slash = ''
+            if os.path.isdir(item_list[i].path+slash+item_list[i].name):
                 icon = folderIcon
             self.itemsView.setItem(i, 0, QTableWidgetItem(icon,item_list[i].name))
             self.itemsView.setItem(i,1 , QTableWidgetItem(item_list[i].date))

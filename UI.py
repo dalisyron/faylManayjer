@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QShortcut, QMainWindow,QMessageBox, QApplication, QW
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 import item,main,os,time
+import functools
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -86,25 +87,80 @@ class Ui_MainWindow(object):
         self.addButton.setObjectName("addButton")
         self.addButton.setText("Add to favorites")
         self.addButton.clicked.connect(self.addEvent)
+
         self.removeFavoriteButton = QtWidgets.QToolButton(self.centralwidget)
         self.removeFavoriteButton.setGeometry(QtCore.QRect(0, 430, 161, 21))
         self.removeFavoriteButton.setObjectName("removeFavoriteButton")
         self.removeFavoriteButton.setText("Remove from favorites")
         self.removeFavoriteButton.clicked.connect(self.removeFavoriteEvent)
-
-
         #self.pushButton_2.setObjectName("pushButton_2")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 700, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
         self.menubar.setObjectName("menubar")
+        self.menuFile = QtWidgets.QMenu(self.menubar)
+        self.menuFile.setObjectName("menuFile")
+        self.menuEdit = QtWidgets.QMenu(self.menubar)
+        self.menuEdit.setObjectName("menuEdit")
+        self.menuView = QtWidgets.QMenu(self.menubar)
+        self.menuView.setObjectName("menuView")
+        self.menuChange_View = QtWidgets.QMenu(self.menuView)
+        self.menuChange_View.setObjectName("menuChange_View")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.actionOpen = QtWidgets.QAction(MainWindow)
+        self.actionOpen.setObjectName("actionOpen")
+        self.actionUndo = QtWidgets.QAction(MainWindow)
+        self.actionUndo.setObjectName("actionUndo")
+        self.actionDelete = QtWidgets.QAction(MainWindow)
+        self.actionDelete.setObjectName("actionDelete")
+        self.actionPreview = QtWidgets.QAction(MainWindow)
+        self.actionPreview.setObjectName("actionPreview")
+        self.actionExit = QtWidgets.QAction(MainWindow)
+        self.actionExit.setObjectName("actionExit")
+        self.actionCopy = QtWidgets.QAction(MainWindow)
+        self.actionCopy.setObjectName("actionCopy")
+        self.actionCut = QtWidgets.QAction(MainWindow)
+        self.actionCut.setObjectName("actionCut")
+        self.actionPaste = QtWidgets.QAction(MainWindow)
+        self.actionPaste.setObjectName("actionPaste")
+        self.actionSelect_All = QtWidgets.QAction(MainWindow)
+        self.actionSelect_All.setObjectName("actionSelect_All")
+        self.actionProperties = QtWidgets.QAction(MainWindow)
+        self.actionProperties.setObjectName("actionProperties")
+        self.actionLayouts = QtWidgets.QAction(MainWindow)
+        self.actionLayouts.setObjectName("actionLayouts")
+        self.actionLarge = QtWidgets.QAction(MainWindow)
+        self.actionLarge.setObjectName("actionLarge")
+        self.actionMedium = QtWidgets.QAction(MainWindow)
+        self.actionMedium.setObjectName("actionMedium")
+        self.actionSmall = QtWidgets.QAction(MainWindow)
+        self.actionSmall.setObjectName("actionSmall")
+        self.actionSort = QtWidgets.QAction(MainWindow)
+        self.actionSort.setObjectName("actionSort")
+        self.menuFile.addAction(self.actionExit)
+        self.menuEdit.addAction(self.actionSort)
+        self.menuEdit.addAction(self.actionCopy)
+        self.menuEdit.addAction(self.actionCut)
+        self.menuEdit.addAction(self.actionPaste)
+        self.menuEdit.addAction(self.actionSelect_All)
+        self.menuChange_View.addAction(self.actionLarge)
+        self.menuChange_View.addAction(self.actionMedium)
+        self.menuChange_View.addAction(self.actionSmall)
+        self.menuView.addAction(self.menuChange_View.menuAction())
+        self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuEdit.menuAction())
+        self.menubar.addAction(self.menuView.menuAction())
+        self.actionSort.triggered.connect(self.sortRefresh)
+        self.actionExit.triggered.connect(self.exitApp)
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+    def exitApp(self):
+        sys.exit()
+        
     def deleteEvent(self):
         try:
             self.selected_items = []
@@ -233,6 +289,21 @@ class Ui_MainWindow(object):
             self.favoriteView.setItem(i,0,QTableWidgetItem(icon,self.favorite_list[i].split('/')[-1]))
         self.itemsView.move(0, 0)
 
+    def compare(self, item1):
+        slash = '/'
+        if (item1.path == '/'):
+            slash = ''
+        val1 = item1.name
+        if os.path.isdir(item1.path+slash+item1.name):
+            val1 = '+' + val1
+        return val1 
+
+    def sortData(self):
+        main.file_list = sorted(main.file_list, key = lambda item : self.compare(item))
+    
+    def sortRefresh(self):
+        self.sortData()
+        self.showDirectoryContent(main.file_list)
 
     def showDirectoryContent(self,item_list):
         self.itemsView.setRowCount(len(item_list))
@@ -241,6 +312,7 @@ class Ui_MainWindow(object):
         self.itemsView.autoFillBackground()
         fileIcon = QtGui.QIcon(QtGui.QPixmap("fileIcon.png"))
         folderIcon = QtGui.QIcon(QtGui.QPixmap("folderIcon.png"))
+
         for i in range(len(item_list)):
             icon = fileIcon
             slash = '/'
@@ -320,6 +392,25 @@ class Ui_MainWindow(object):
         self.pushButton.setText(_translate("MainWindow", "Go to"))
         self.pushButton_2.setText(_translate("MainWindow", "Back"))
         self.directoryTextView.setText(main.current_path)
+        self.menuFile.setTitle(_translate("MainWindow", "File"))
+        self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
+        self.menuView.setTitle(_translate("MainWindow", "View"))
+        self.menuChange_View.setTitle(_translate("MainWindow", "Change View"))
+        self.actionOpen.setText(_translate("MainWindow", "Open"))
+        self.actionUndo.setText(_translate("MainWindow", "Undo"))
+        self.actionDelete.setText(_translate("MainWindow", "Delete"))
+        self.actionPreview.setText(_translate("MainWindow", "Preview"))
+        self.actionExit.setText(_translate("MainWindow", "Exit"))
+        self.actionCopy.setText(_translate("MainWindow", "Copy"))
+        self.actionCut.setText(_translate("MainWindow", "Cut"))
+        self.actionPaste.setText(_translate("MainWindow", "Paste"))
+        self.actionSelect_All.setText(_translate("MainWindow", "Select All"))
+        self.actionProperties.setText(_translate("MainWindow", "Properties"))
+        self.actionLayouts.setText(_translate("MainWindow", "Layouts"))
+        self.actionLarge.setText(_translate("MainWindow", "Large"))
+        self.actionMedium.setText(_translate("MainWindow", "Medium"))
+        self.actionSmall.setText(_translate("MainWindow", "Small"))
+        self.actionSort.setText(_translate("MainWindow", "Sort"))
 
     def onClickGoTo(self):#for go to button
         if os.path.exists(self.directoryTextView.toPlainText()):

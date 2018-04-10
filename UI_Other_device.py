@@ -252,12 +252,29 @@ class Ui_MainWindow(object):
                     main.current_path += str(itemm.data())
                 else:
                     main.current_path += '/'+str(itemm.data())
-                if os.path.isdir(main.current_path):
-                    main.file_list=item.getItemList(main.current_path)
+                req = "isdir:"+main.current_path
+                req = req.encode("utf_8")
+                self.client_socket.sendall(req)
+                ans = self.client_socket.recv(self.MAX_BUFFER_SIZE)
+                ans = ans.decode('utf_8')
+                if ans=="T":
+                    self.makeFileList()
                     self.showDirectoryContent(main.file_list)
                     self.history.append(main.current_path)
                 else:
-                    os.system("open "+ main.current_path)
+                    req = "file:" + main.current_path
+                    req = req.encode("utf_8")
+                    data = []
+                    self.client_socket.sendall(req)
+                    file = open(main.current_path.split('/')[-1],"wb")
+                    while True:
+                        input = self.client_socket.recv(self.MAX_BUFFER_SIZE)
+                        if input !="finish,&*^".encode("utf_8"):
+                            data.append(input)
+                        else:
+                            break
+                    file.writelines(data)
+                    file.close()
                     main.current_path = self.history[-1]
                 self.refreshDirectory(main.current_path)
         except PermissionError:
@@ -274,7 +291,7 @@ class Ui_MainWindow(object):
         if len(self.history)!= 1:
             self.history.pop()
             main.current_path = self.history[-1]
-            main.file_list = item.getItemList(main.current_path)
+            self.makeFileList()
             self.showDirectoryContent(main.file_list)
             self.directoryTextView.setText(main.current_path)
 
@@ -292,12 +309,22 @@ class Ui_MainWindow(object):
         self.directoryTextView.setText(main.current_path)
 
     def onClickGoTo(self):#for go to button
-        if os.path.exists(self.directoryTextView.toPlainText()):
+        req = "exist:" + self.directoryTextView.toPlainText()
+        req = req.encode("utf_8")
+        self.client_socket.sendall(req)
+        ans = self.client_socket.recv(self.MAX_BUFFER_SIZE)
+        ans = ans.decode('utf_8')
+        if ans == "T":
             try:
-                mytext = self.directoryTextView.toPlainText()
-                main.current_path = mytext
-                if os.path.isdir(mytext):
-                    main.file_list=item.getItemList(mytext)
+                main.current_path = self.directoryTextView.toPlainText()
+                req = "isdir:" + main.current_path
+                req = req.encode("utf_8")
+                self.client_socket.sendall(req)
+                ans = self.client_socket.recv(self.MAX_BUFFER_SIZE)
+                ans = ans.decode('utf_8')
+
+                if ans=="T":
+                    self.makeFileList()
                     self.showDirectoryContent(main.file_list)
                     if main.current_path.split('/')[-1] == "..":
                         main.current_path = '/'.join(main.current_path.split('/')[:-2])
@@ -306,7 +333,19 @@ class Ui_MainWindow(object):
                         self.directoryTextView.setText(main.current_path)
                     self.history.append(main.current_path)
                 else:
-                    os.system("open "+ main.current_path)
+                    req = "file:" + main.current_path
+                    req = req.encode("utf_8")
+                    data = []
+                    self.client_socket.sendall(req)
+                    file = open(main.current_path.split('/')[-1], "wb")
+                    while True:
+                        input = self.client_socket.recv(self.MAX_BUFFER_SIZE)
+                        if input != "finish,&*^".encode("utf_8"):
+                            data.append(input)
+                        else:
+                            break
+                    file.writelines(data)
+                    file.close()
                     main.current_path = self.history[-1]
             except PermissionError:
                 self.showError("Permission denied!")
@@ -315,7 +354,6 @@ class Ui_MainWindow(object):
         else:
             self.showError(self.directoryTextView.toPlainText()+" does not exist!")
     def makeFileList(self):
-        main.current_path = '/Users/Desktop'
         req = "get:"+main.current_path
         req = req.encode("utf_8")
         print(req)

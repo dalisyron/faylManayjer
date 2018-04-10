@@ -13,6 +13,7 @@ def client_service(conn, ip, port,clients,MAX_BUFFER_SIZE=4098):
             conn.sendall(item_dict_bytes)
         elif str.startswith(answer, 'copy:'):
             selected_names = answer[5:]
+            cut_selected_items = []
             selected_items = []
             for i in selected_names.split(',&*^'):
                 selected_items.append(
@@ -30,25 +31,29 @@ def client_service(conn, ip, port,clients,MAX_BUFFER_SIZE=4098):
             item_dict_bytes = json.dumps(item_dict).encode('utf_8')
             conn.sendall(item_dict_bytes)
         elif str.startswith(answer, 'paste'):
-            for i in selected_items:
-                i.copy(main.current_path)
-            if cut_selected_items and main.current_path != cut_selected_items[0].path:
-                for i in cut_selected_items:
+            try:
+                for i in selected_items:
                     i.copy(main.current_path)
-                    i.delete()
+                if cut_selected_items and main.current_path != cut_selected_items[0].path:
+                    for i in cut_selected_items:
+                        i.copy(main.current_path)
+                        i.delete()
+            except:
+                print("could not paste!!!")
             item_dict = item.getItemJson(main.current_path)
             item_dict_bytes = json.dumps(item_dict).encode('utf_8')
             conn.sendall(item_dict_bytes)
         elif str.startswith(answer, 'cut:'):
             selected_names = answer[4:]
             cut_selected_items = []
+            selected_items = []
             for i in selected_names.split(',&*^'):
                 cut_selected_items.append(
                     item.Item(main.current_path, i, time.ctime(os.path.getmtime(main.current_path + '/' + i)),
                               os.path.getsize(main.current_path + '/' + i)))
-            item_dict = item.getItemJson(main.current_path)
-            item_dict_bytes = json.dumps(item_dict).encode('utf_8')
-            conn.sendall(item_dict_bytes)
+            # item_dict = item.getItemJson(main.current_path)
+            # item_dict_bytes = json.dumps(item_dict).encode('utf_8')
+            # conn.sendall(item_dict_bytes)
         elif str.startswith(answer, 'exist:'):
             answer = answer[6:]
             existence = os.path.exists(answer)

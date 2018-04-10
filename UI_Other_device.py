@@ -107,14 +107,20 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def deleteEvent(self):
-        self.selected_items = []
+        selected_names = []
         for i in self.itemsView.selectedItems():
-            self.selected_items.append(
-                item.Item(main.current_path, i.text(), time.ctime(os.path.getmtime(main.current_path + '/' + i.text())),
-                          os.path.getsize(main.current_path + '/' + i.text())))
-        for i in self.selected_items:
-            i.delete()
-        main.file_list = item.getItemList(main.current_path)
+            selected_names.append(i.text())
+        delete_names = ',&*^'.join(selected_names)
+        delete_names_bytes = ("delete:"+delete_names).encode('utf_8')
+        self.client_socket.sendall(delete_names_bytes)
+
+        answer = self.client_socket.recv(self.MAX_BUFFER_SIZE)
+        dict = json.loads(answer)
+        print(dict)
+        main.file_list = []
+        for i in range(len(dict)):
+            itemm = dict[str(i)].split(',')
+            main.file_list.append(item.Item(itemm[0],itemm[1],itemm[2],int(itemm[3])))
         self.showDirectoryContent(main.file_list)
 
 
@@ -138,38 +144,39 @@ class Ui_MainWindow(object):
         except:
             self.showError()
     def copyEvent(self):
-        try:
-            self.selected_items = []
-            self.cut_selected_items = []
-            for i in self.itemsView.selectedItems():
-                self.selected_items.append(item.Item(main.current_path , i.text(), time.ctime(os.path.getmtime(main.current_path + '/' +i.text())), os.path.getsize(main.current_path + '/' + i.text())))
-        except PermissionError:
-            self.showError("Permission denied!")
-        except :
-            self.showError()
+        selected_names = []
+        for i in self.itemsView.selectedItems():
+            selected_names.append(i.text())
+        copy_names = ',&*^'.join(selected_names)
+        copy_names_bytes = ("copy:"+copy_names).encode('utf_8')
+        self.client_socket.sendall(copy_names_bytes)
+
+        # except PermissionError:
+        #     self.showError("Permission denied!")
+        # except :
+        #     self.showError()
 
         #print(self.itemsView.selectedItems()[0].text())
     def pasteEvent(self):
-        try:
-            for i in self.selected_items:
-                i.copy(main.current_path)
-            if self.cut_selected_items and main.current_path != self.cut_selected_items[0].path:
-                for i in self.cut_selected_items:
-                    i.copy(main.current_path)
-                    i.delete()
-            main.file_list = item.getItemList(main.current_path)
-            self.showDirectoryContent(main.file_list)
-        except:
-            self.showError()
+        self.client_socket.sendall("paste".encode("utf_8"))
+        answer = self.client_socket.recv(self.MAX_BUFFER_SIZE)
+        dict = json.loads(answer)
+        print(dict)
+        main.file_list = []
+        for i in range(len(dict)):
+            itemm = dict[str(i)].split(',')
+            main.file_list.append(item.Item(itemm[0],itemm[1],itemm[2],int(itemm[3])))
+        self.showDirectoryContent(main.file_list)
+
 
     def cutEvent(self):
         try:
-            self.selected_items = []
-            self.cut_selected_items = []
+            selected_names = []
             for i in self.itemsView.selectedItems():
-                self.cut_selected_items.append(
-                    item.Item(main.current_path, i.text(), time.ctime(os.path.getmtime(main.current_path + '/' + i.text())),
-                              os.path.getsize(main.current_path + '/' + i.text())))
+                selected_names.append(i.text())
+            cut_names = ',&*^'.join(selected_names)
+            cut_names_bytes = ("cut:"+cut_names).encode('utf_8')
+            self.client_socket.sendall(cut_names_bytes)
         except PermissionError:
             self.showError("Permission denied!")
         except :

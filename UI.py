@@ -17,7 +17,7 @@ import functools
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(700, 503)
+        MainWindow.resize(750, 503)
         QShortcut(QtGui.QKeySequence("Backspace"), MainWindow, self.onClickBack)
         QShortcut(QtGui.QKeySequence("Return"), MainWindow, self.onClickGoTo)
         QShortcut(QtGui.QKeySequence("CTRL+c"), MainWindow, self.copyEvent)
@@ -32,7 +32,7 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(170, 50, 531, 381))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(170, 50, 581, 381))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -52,9 +52,23 @@ class Ui_MainWindow(object):
         self.directoryTextView.insertPlainText('hamidreza')
         self.directoryTextView.setGeometry(QtCore.QRect(170, 10, 401, 31))
         self.directoryTextView.setObjectName("directoryTextView")
+
+        self.serverButton=QtWidgets.QPushButton(self.centralwidget)
+        self.serverButton.setIcon(QtGui.QIcon(QtGui.QPixmap("server.png")))
+        self.serverButton.setIconSize(QtCore.QSize(37,37))
+        self.serverButton.clicked.connect(self.makeServer)
+        self.serverButton.setGeometry(QtCore.QRect(630, 0, 60, 50))
+
+
+        self.clientButton = QtWidgets.QPushButton(self.centralwidget)
+        self.clientButton.setIcon(QtGui.QIcon(QtGui.QPixmap("client.png")))
+        self.clientButton.setIconSize(QtCore.QSize(37, 37))
+        self.clientButton.clicked.connect(self.connetTo)
+        self.clientButton.setGeometry(QtCore.QRect(690, 0, 60, 50))
+
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.clicked.connect(self.onClickGoTo)
-        self.pushButton.setGeometry(QtCore.QRect(580, 10, 110, 32))
+        self.pushButton.setGeometry(QtCore.QRect(570, 10, 60, 32))
         self.pushButton_2 = QtWidgets.QPushButton('back',self.centralwidget)
         self.pushButton_2.setGeometry(QtCore.QRect(30, 10, 110, 32))
         self.pushButton_2.clicked.connect(self.onClickBack)
@@ -93,6 +107,7 @@ class Ui_MainWindow(object):
         self.removeFavoriteButton.setObjectName("removeFavoriteButton")
         self.removeFavoriteButton.setText("Remove from favorites")
         self.removeFavoriteButton.clicked.connect(self.removeFavoriteEvent)
+
         #self.pushButton_2.setObjectName("pushButton_2")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -140,6 +155,7 @@ class Ui_MainWindow(object):
         self.actionSmall.setObjectName("actionSmall")
         self.actionSort = QtWidgets.QAction(MainWindow)
         self.actionSort.setObjectName("actionSort")
+
         self.menuFile.addAction(self.actionExit)
         self.menuEdit.addAction(self.actionSort)
         self.menuEdit.addAction(self.actionCopy)
@@ -189,6 +205,23 @@ class Ui_MainWindow(object):
         self.favorite_list = new_favorites
         self.showFavorites()
 
+
+    def makeServer(self):
+        host, okPressed = QInputDialog.getText(MainWindow, "Get Host", "Host:", QLineEdit.Normal)
+        if not okPressed:
+            return
+        host, okPressed = QInputDialog.getText(MainWindow, "Get Port", "Port:", QLineEdit.Normal)
+        if not okPressed:
+            return
+
+
+    def connetTo(self):
+        host, okPressed = QInputDialog.getText(MainWindow, "Get Host", "Host:", QLineEdit.Normal)
+        if not okPressed:
+            return
+        host, okPressed = QInputDialog.getText(MainWindow, "Get Port", "Port:", QLineEdit.Normal)
+        if not okPressed:
+            return
 
     def newFolderEvent(self):
         try:

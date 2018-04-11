@@ -17,7 +17,7 @@ import functools
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(750, 503)
+        MainWindow.resize(760, 503)
         QShortcut(QtGui.QKeySequence("Backspace"), MainWindow, self.onClickBack)
         QShortcut(QtGui.QKeySequence("Return"), MainWindow, self.onClickGoTo)
         QShortcut(QtGui.QKeySequence("CTRL+c"), MainWindow, self.copyEvent)
@@ -32,7 +32,7 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(170, 50, 581, 381))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(170, 50, 591, 381))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -68,30 +68,61 @@ class Ui_MainWindow(object):
 
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.clicked.connect(self.onClickGoTo)
-        self.pushButton.setGeometry(QtCore.QRect(570, 10, 60, 32))
+        self.pushButton.setGeometry(QtCore.QRect(570, 20, 60, 28))
         self.pushButton_2 = QtWidgets.QPushButton('back',self.centralwidget)
-        self.pushButton_2.setGeometry(QtCore.QRect(30, 10, 110, 32))
+        self.pushButton_2.setGeometry(QtCore.QRect(570, 0, 60, 28))
         self.pushButton_2.clicked.connect(self.onClickBack)
+
         self.newFolderButton = QtWidgets.QPushButton(self.centralwidget)
-        self.newFolderButton.setGeometry(QtCore.QRect(170, 430, 110, 32))
+        self.newFolderButton.setGeometry(QtCore.QRect(170, 430, 91, 32))
         self.newFolderButton.setObjectName("newFolderButton")
         self.newFolderButton.setText("New Folder")
         self.newFolderButton.clicked.connect(self.newFolderEvent)
+
         self.copyButton = QtWidgets.QPushButton(self.centralwidget)
-        self.copyButton.setGeometry(QtCore.QRect(300, 430, 110, 32))
+        self.copyButton.setGeometry(QtCore.QRect(271-5, 430, 91, 32))
         self.copyButton.setObjectName("copyButton")
         self.copyButton.setText("Copy")
         self.copyButton.clicked.connect(self.copyEvent)
+
         self.cutButton = QtWidgets.QPushButton(self.centralwidget)
-        self.cutButton.setGeometry(QtCore.QRect(430, 430, 110, 32))
+        self.cutButton.setGeometry(QtCore.QRect(372-10, 430, 91, 32))
         self.cutButton.setObjectName("cutButton")
         self.cutButton.setText("Cut")
         self.cutButton.clicked.connect(self.cutEvent)
+
         self.pasteButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pasteButton.setGeometry(QtCore.QRect(550, 430, 110, 32))
+        self.pasteButton.setGeometry(QtCore.QRect(473-15, 430, 91, 32))
         self.pasteButton.setObjectName("pasteButton")
         self.pasteButton.setText("Paste")
         self.pasteButton.clicked.connect(self.pasteEvent)
+
+
+        self.shareComboBox = QtWidgets.QComboBox(self.centralwidget)
+        self.shareComboBox.setGeometry(QtCore.QRect(473 + 101  , 430, 100, 32))
+        self.shareComboBox.setObjectName("shareComboBox")
+        icon = QtGui.QIcon(QtGui.QPixmap("pc.png"))
+        self.shareComboBox.addItem("pc1")
+        self.shareComboBox.addItem("pc2")
+        self.shareComboBox.setItemIcon(0, icon)
+        self.shareComboBox.setItemIcon(1,icon)
+
+        self.selectComboBox = QtWidgets.QComboBox(self.centralwidget)
+        self.selectComboBox.setGeometry(QtCore.QRect(10, 10, 150, 32))
+        self.selectComboBox.setObjectName("selectComboBox")
+        self.selectComboBox.addItem("pc1")
+        self.selectComboBox.addItem("pc2")
+        self.selectComboBox.setItemIcon(0, icon)
+        self.selectComboBox.setItemIcon(1, icon)
+        self.selectComboBox.activated.connect(self.sourceChanged)
+
+
+        self.shareButton = QtWidgets.QPushButton(self.centralwidget)
+        self.shareButton.setGeometry(QtCore.QRect(675, 430, 60, 32))
+        self.shareButton.setObjectName("shareButton")
+        self.shareButton.setText("Share")
+        self.shareButton.clicked.connect(self.shareEvent)
+
         self.favoriteLabel = QtWidgets.QLabel(self.centralwidget)
         self.favoriteLabel.setGeometry(QtCore.QRect(55, 50, 81, 16))
         self.favoriteLabel.setObjectName("favoriteLabel")
@@ -222,6 +253,13 @@ class Ui_MainWindow(object):
         host, okPressed = QInputDialog.getText(MainWindow, "Get Port", "Port:", QLineEdit.Normal)
         if not okPressed:
             return
+
+    def shareEvent(self):
+        pass
+
+    def sourceChanged(self):
+        print(self.selectComboBox.currentText())
+
 
     def newFolderEvent(self):
         try:

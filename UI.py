@@ -7,11 +7,11 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import sys
+import sys,os,time
 from PyQt5.QtWidgets import QShortcut, QMainWindow,QMessageBox, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout,QAbstractItemView,QMenu,QInputDialog,QLineEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
-import item,main,os,time
+import item,main,server
 import functools
 
 class Ui_MainWindow(object):
@@ -241,9 +241,12 @@ class Ui_MainWindow(object):
         host, okPressed = QInputDialog.getText(MainWindow, "Get Host", "Host:", QLineEdit.Normal)
         if not okPressed:
             return
-        host, okPressed = QInputDialog.getText(MainWindow, "Get Port", "Port:", QLineEdit.Normal)
+        port, okPressed = QInputDialog.getText(MainWindow, "Get Port", "Port:", QLineEdit.Normal)
         if not okPressed:
             return
+        #server.Server(host,int(port))
+        #
+
 
 
     def connetTo(self):
@@ -253,6 +256,7 @@ class Ui_MainWindow(object):
         host, okPressed = QInputDialog.getText(MainWindow, "Get Port", "Port:", QLineEdit.Normal)
         if not okPressed:
             return
+
 
     def shareEvent(self):
         pass

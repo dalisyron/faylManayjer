@@ -1,5 +1,7 @@
-import socket,item,main,json,time,os
+import socket,item,main,json,time,os,json,threading
 from threading import Thread
+
+lock = threading.Lock()
 
 class Server:
     def __init__(self,_host,_port):
@@ -14,7 +16,8 @@ class Server:
 
     def start(self):
         while True:
-            conn,addr = self.server_socket
+            print("main server is waiting")
+            conn,addr = self.serverSocket.accept()
             ip= str(addr[0])
             print("new client added")
             Thread(target=self.recive , args=(conn,ip)).start()
@@ -24,33 +27,21 @@ class Server:
             answer_in_bytes = conn.recv(self.MAX_BUFFER_SIZE)
             answer = answer_in_bytes.decode('utf_8')
 
-            if str.startswith(answer,"name:"):
-                name = answer[5:]
-                self.clients[name] = (conn , ip)
+            if str.startswith(answer,"info:"):
+                info = answer[5:]
+                clientInfo=info.split(',&*^')
+                name=clientInfo[0]
+                personalPort = int(clientInfo[1])
+                self.clients[name] = {"conn":conn,"ip":ip,"personalPort":int(personalPort)}
                 self.updateClientsData()
 
-            elif str.startswith(answer,"connect:"):
-                #faghat name ro mifreste
-                targetName = answer[8:]
-                targetIp = self.clients[targetName][1]
-                targetConn = self.clients[targetName][0]
-                port = 9090 # /: be mola
-                self.sendMakeServerRequest(targetConn,targetIp,port)#be target migim server sho.
-                self.sendConnectToServerRequest(conn,targetIp,port)
-
-    def sendMakeServerRequest(self,conn,host,port):
-        message = "makeServer:" + ',&*^'.join([host,port])
-        message_bytes = message.encode(message)
-        conn.sendall(message_bytes)
-
-    def sendConnectToServerRequest(self,conn,host,port):
-        message = "connectTo:" + ',&*^'.join([host,port])
-        message_bytes = message.encode(message)
-        conn.sendall(message_bytes)
-
     def updateClientsData(self):
-        message = "connectedList:"+',&*^'.join(self.clients.keys())
-        message_bytes = message.encode()
+        dic = {}
+        for client in  self.clients:
+            dic[client]={"ip":self.clients[client]["ip"],"personalPort":self.clients[client]["personalPort"]}
+        dic_bytes = json.dumps(dic).encode("utf_8")
         for client in self.clients:
-            conn = self.clients[client][0]
-            conn.sendall(message_bytes)
+            with lock:
+                print(dic)
+            conn = self.clients[client]["conn"]
+            conn.sendall(dic_bytes)

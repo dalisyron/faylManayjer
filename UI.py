@@ -7,11 +7,12 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import sys,os,time
+import sys,os,time,socket,json
+from threading import Thread
 from PyQt5.QtWidgets import QShortcut, QMainWindow,QMessageBox, QApplication, QWidget, QAction, QTableWidget,QTableWidgetItem,QVBoxLayout,QAbstractItemView,QMenu,QInputDialog,QLineEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
-import item,main,server
+import item,main,server,UI_Other_device,serverside
 import functools
 
 class Ui_MainWindow(object):
@@ -25,7 +26,11 @@ class Ui_MainWindow(object):
         QShortcut(QtGui.QKeySequence("CTRL+x"), MainWindow, self.cutEvent)
         QShortcut(QtGui.QKeySequence("CTRL+n"), MainWindow, self.newFolderEvent)
         QShortcut(QtGui.QKeySequence("CTRL+Backspace"), MainWindow, self.deleteEvent)
+        self.current_path = '/'
+        self.file_list=[]
         self.history = [main.current_path]
+        self.mainServerConnectionSocket = socket.socket()
+        self.connectedDevices ={}
         self.selected_items = []
         self.cut_selected_items = []
         self.favorite_list = []
@@ -63,7 +68,7 @@ class Ui_MainWindow(object):
         self.clientButton = QtWidgets.QPushButton(self.centralwidget)
         self.clientButton.setIcon(QtGui.QIcon(QtGui.QPixmap("client.png")))
         self.clientButton.setIconSize(QtCore.QSize(37, 37))
-        self.clientButton.clicked.connect(self.connetTo)
+        self.clientButton.clicked.connect(self.connectTo)
         self.clientButton.setGeometry(QtCore.QRect(690, 0, 60, 50))
 
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
@@ -244,18 +249,70 @@ class Ui_MainWindow(object):
         port, okPressed = QInputDialog.getText(MainWindow, "Get Port", "Port:", QLineEdit.Normal)
         if not okPressed:
             return
-        #server.Server(host,int(port))
-        #
+        port = int(port)
+        mainServer = server.Server(host,int(port))
+        try:
+            Thread(target=mainServer.start).start()
+            print("main server is ready")
+        except:
+            print("error while making main server")
 
 
 
-    def connetTo(self):
-        host, okPressed = QInputDialog.getText(MainWindow, "Get Host", "Host:", QLineEdit.Normal)
+    def connectTo(self):
+
+        host, okPressed = QInputDialog.getText(MainWindow, "Get Host", "Server Host:", QLineEdit.Normal)
         if not okPressed:
             return
-        host, okPressed = QInputDialog.getText(MainWindow, "Get Port", "Port:", QLineEdit.Normal)
+        port, okPressed = QInputDialog.getText(MainWindow, "Get Port", "Server Port:", QLineEdit.Normal)
         if not okPressed:
             return
+        name, okPressed = QInputDialog.getText(MainWindow, "Get Port", "Your Name:", QLineEdit.Normal)
+        if not okPressed:
+            return
+        personalPort, okPressed = QInputDialog.getText(MainWindow, "Get PersonalPort", "PersonalPort for connecting peer to peer:", QLineEdit.Normal)
+        if not okPressed:
+            return
+        port = int(port)
+        personalPort=int(personalPort)
+
+        try:
+            self.mainServerConnectionSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            print(host,port)
+            self.mainServerConnectionSocket.connect((host,port))
+            message = "info:"+name+',&*^'+str(personalPort)
+            message_in_bytes = message.encode("utf_8")
+            self.mainServerConnectionSocket.sendall(message_in_bytes)
+            Thread(target=self.updateComboBoxes).start()
+
+            #host = ip
+            Thread(target=serverside.createServerside,args=(host,personalPort)).start()
+        #print("server side is made for (host = , port = ) : " ,host,personalPort)
+
+        except Exception as ex:
+
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+
+            message = template.format(type(ex).__name__, ex.args)
+
+            print (message)
+            print("error while connecting to main server")
+
+
+    def updateComboBoxes(self):
+        while True:
+            mainServerData = self.mainServerConnectionSocket.recv(4096).decode("utf_8")
+            self.connectedDevices = json.loads(mainServerData)
+            self.selectComboBox.clear()
+            self.shareComboBox.clear()
+            i = 0
+            icon = QtGui.QIcon(QtGui.QPixmap("pc.png"))
+            for device in self.connectedDevices:
+                self.selectComboBox.addItem(device)
+                self.shareComboBox.addItem(device)
+                self.selectComboBox.setItemIcon(i, icon)
+                self.shareComboBox.setItemIcon(i, icon)
+                i=i+1
 
 
     def shareEvent(self):
@@ -263,8 +320,27 @@ class Ui_MainWindow(object):
 
     def sourceChanged(self):
         print(self.selectComboBox.currentText())
+        name = self.selectComboBox.currentText()
+        ip = self.connectedDevices[name]["ip"]
+        personalPort = int(self.connectedDevices[name]["personalPort"])
+        file = open("t.txt", "w")
+        file.write(ip+',&*^'+str(personalPort))
+        file.close()
+
+        addr = os.path.abspath("t.txt")[:-6]
+        if sys.platform == 'darwin':
+            addr = addr.split(' ')
+            addr = '\\ '.join(addr)
+
+        def an() :
+            os.system("python3 " + addr + "/UI_Other_device.py")
+        Thread(target=an).start()
 
 
+
+
+        #Thread(target=UI_Other_device.makeNewUI,args=(ip,personalPort)).start()
+        #UI_Other_device.makeNewUI(ip,personalPort)
     def newFolderEvent(self):
         try:
             name = "New Folder"

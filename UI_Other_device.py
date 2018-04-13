@@ -15,7 +15,7 @@ import item,main,os,time
 import socket,json
 
 class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
+    def setupUi(self, MainWindow, _host ,_port ):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(700, 503)
         QShortcut(QtGui.QKeySequence("Backspace"), MainWindow, self.onClickBack)
@@ -26,13 +26,18 @@ class Ui_MainWindow(object):
         QShortcut(QtGui.QKeySequence("CTRL+n"), MainWindow, self.newFolderEvent)
         QShortcut(QtGui.QKeySequence("CTRL+Backspace"), MainWindow, self.deleteEvent)
         self.MAX_BUFFER_SIZE = 4098
+        self.current_path = '/'
         self.client_socket = socket.socket()
         self.client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.host = '127.0.0.1'
-        self.port = 12345
+        self.host = _host
+        if _host == '127.0.0.1':
+            self.host=''
+        self.port = _port
+        print(self.host,self.port)
         self.client_socket.connect((self.host,self.port))
-        self.history = [main.current_path]
+        self.history = [self.current_path]
         self.selected_items = []
+        self.file_list = []
         self.cut_selected_items = []
         self.favorite_list = []
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -117,11 +122,11 @@ class Ui_MainWindow(object):
         answer = self.client_socket.recv(self.MAX_BUFFER_SIZE)
         dict = json.loads(answer)
         print(dict)
-        main.file_list = []
+        self.file_list = []
         for i in range(len(dict)):
             itemm = dict[str(i)].split(',')
-            main.file_list.append(item.Item(itemm[0],itemm[1],itemm[2],int(itemm[3])))
-        self.showDirectoryContent(main.file_list)
+            self.file_list.append(item.Item(itemm[0],itemm[1],itemm[2],int(itemm[3])))
+        self.showDirectoryContent(self.file_list)
 
 
     def newFolderEvent(self):
@@ -130,15 +135,15 @@ class Ui_MainWindow(object):
             text, okPressed = QInputDialog.getText(MainWindow, "Get Name", "Name:", QLineEdit.Normal, name)
             if okPressed and text != '':
                 name  = text
-                if os.path.exists(main.current_path+'/'+name):
+                if os.path.exists(self.current_path+'/'+name):
                     i = 1
-                    while os.path.exists(main.current_path + '/' + name+ ' (' + str(i) + ')'):
+                    while os.path.exists(self.current_path + '/' + name+ ' (' + str(i) + ')'):
                         i+=1
-                    os.makedirs(main.current_path + '/' + name+ ' (' + str(i) + ')')
+                    os.makedirs(self.current_path + '/' + name+ ' (' + str(i) + ')')
                 else:
-                    os.makedirs(main.current_path+'/'+name)
-                main.file_list = item.getItemList(main.current_path)
-                self.showDirectoryContent(main.file_list)
+                    os.makedirs(self.current_path+'/'+name)
+                self.file_list = item.getItemList(self.current_path)
+                self.showDirectoryContent(self.file_list)
         except PermissionError:
             self.showError("Permission denied!")
         except:
@@ -162,11 +167,11 @@ class Ui_MainWindow(object):
         answer = self.client_socket.recv(self.MAX_BUFFER_SIZE)
         dict = json.loads(answer)
         print(dict)
-        main.file_list = []
+        self.file_list = []
         for i in range(len(dict)):
             itemm = dict[str(i)].split(',')
-            main.file_list.append(item.Item(itemm[0],itemm[1],itemm[2],int(itemm[3])))
-        self.showDirectoryContent(main.file_list)
+            self.file_list.append(item.Item(itemm[0],itemm[1],itemm[2],int(itemm[3])))
+        self.showDirectoryContent(self.file_list)
 
 
     def cutEvent(self):
@@ -183,7 +188,7 @@ class Ui_MainWindow(object):
             self.showError()
 
     def refreshDirectory(self,path):
-        self.directoryTextView.setText(main.current_path)
+        self.directoryTextView.setText(self.current_path)
 
     def showError(self,errorText = None):
         error_dialog = QMessageBox()
@@ -197,11 +202,11 @@ class Ui_MainWindow(object):
         if os.path.exists(path):
             try:
                 mytext = path
-                main.current_path = mytext
-                main.file_list=item.getItemList(mytext)
-                self.showDirectoryContent(main.file_list)
-                self.directoryTextView.setText(main.current_path)
-                self.history.append(main.current_path)
+                self.current_path = mytext
+                self.file_list=item.getItemList(mytext)
+                self.showDirectoryContent(self.file_list)
+                self.directoryTextView.setText(self.current_path)
+                self.history.append(self.current_path)
             except PermissionError:
                 self.showError("Permission denied!")
             except:
@@ -210,7 +215,7 @@ class Ui_MainWindow(object):
             self.showError(path+" does not exist!")
 
     def addEvent(self):
-        self.favorite_list.append(main.current_path)
+        self.favorite_list.append(self.current_path)
         self.showFavorites()
 
     def showFavorites(self):
@@ -252,28 +257,28 @@ class Ui_MainWindow(object):
         self.itemsView.move(0,0)
 
     def tableClicked(self,itemm):
-        c_path = main.current_path
+        c_path = self.current_path
         try:
             if itemm.column() == 0:
-                if main.current_path == '/':
-                    main.current_path += str(itemm.data())
+                if self.current_path == '/':
+                    self.current_path += str(itemm.data())
                 else:
-                    main.current_path += '/'+str(itemm.data())
-                req = "isdir:"+main.current_path
+                    self.current_path += '/'+str(itemm.data())
+                req = "isdir:"+self.current_path
                 req = req.encode("utf_8")
                 self.client_socket.sendall(req)
                 ans = self.client_socket.recv(self.MAX_BUFFER_SIZE)
                 ans = ans.decode('utf_8')
                 if ans=="T":
                     self.makeFileList()
-                    self.showDirectoryContent(main.file_list)
-                    self.history.append(main.current_path)
+                    self.showDirectoryContent(self.file_list)
+                    self.history.append(self.current_path)
                 else:
-                    req = "file:" + main.current_path
+                    req = "file:" + self.current_path
                     req = req.encode("utf_8")
                     data = []
                     self.client_socket.sendall(req)
-                    file = open(main.current_path.split('/')[-1],"wb")
+                    file = open(self.current_path.split('/')[-1],"wb")
                     while True:
                         input = self.client_socket.recv(self.MAX_BUFFER_SIZE)
                         if input !="finish,&*^".encode("utf_8"):
@@ -282,25 +287,25 @@ class Ui_MainWindow(object):
                             break
                     file.writelines(data)
                     file.close()
-                    main.current_path = self.history[-1]
-                self.refreshDirectory(main.current_path)
+                    self.current_path = self.history[-1]
+                self.refreshDirectory(self.current_path)
         except PermissionError:
             self.showError("Permission denied!")
-            main.current_path = c_path
-            main.file_list = item.getItemList(main.current_path)
+            self.current_path = c_path
+            self.file_list = item.getItemList(self.current_path)
 
         except :
             self.showError()
-            main.current_path = c_path
-            main.file_list = item.getItemList(main.current_path)
+            self.current_path = c_path
+            self.file_list = item.getItemList(self.current_path)
 
     def onClickBack(self):#for back button
         if len(self.history)!= 1:
             self.history.pop()
-            main.current_path = self.history[-1]
+            self.current_path = self.history[-1]
             self.makeFileList()
-            self.showDirectoryContent(main.file_list)
-            self.directoryTextView.setText(main.current_path)
+            self.showDirectoryContent(self.file_list)
+            self.directoryTextView.setText(self.current_path)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -313,7 +318,7 @@ class Ui_MainWindow(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.pushButton.setText(_translate("MainWindow", "Go to"))
         self.pushButton_2.setText(_translate("MainWindow", "Back"))
-        self.directoryTextView.setText(main.current_path)
+        self.directoryTextView.setText(self.current_path)
 
     def onClickGoTo(self):#for go to button
         req = "exist:" + self.directoryTextView.toPlainText()
@@ -323,8 +328,8 @@ class Ui_MainWindow(object):
         ans = ans.decode('utf_8')
         if ans == "T":
             try:
-                main.current_path = self.directoryTextView.toPlainText()
-                req = "isdir:" + main.current_path
+                self.current_path = self.directoryTextView.toPlainText()
+                req = "isdir:" + self.current_path
                 req = req.encode("utf_8")
                 self.client_socket.sendall(req)
                 ans = self.client_socket.recv(self.MAX_BUFFER_SIZE)
@@ -332,19 +337,19 @@ class Ui_MainWindow(object):
 
                 if ans=="T":
                     self.makeFileList()
-                    self.showDirectoryContent(main.file_list)
-                    if main.current_path.split('/')[-1] == "..":
-                        main.current_path = '/'.join(main.current_path.split('/')[:-2])
-                        if main.current_path == '':
-                            main.current_path = '/'
-                        self.directoryTextView.setText(main.current_path)
-                    self.history.append(main.current_path)
+                    self.showDirectoryContent(self.file_list)
+                    if self.current_path.split('/')[-1] == "..":
+                        self.current_path = '/'.join(self.current_path.split('/')[:-2])
+                        if self.current_path == '':
+                            self.current_path = '/'
+                        self.directoryTextView.setText(self.current_path)
+                    self.history.append(self.current_path)
                 else:
-                    req = "file:" + main.current_path
+                    req = "file:" + self.current_path
                     req = req.encode("utf_8")
                     data = []
                     self.client_socket.sendall(req)
-                    file = open(main.current_path.split('/')[-1], "wb")
+                    file = open(self.current_path.split('/')[-1], "wb")
                     while True:
                         input = self.client_socket.recv(self.MAX_BUFFER_SIZE)
                         if input != "finish,&*^".encode("utf_8"):
@@ -353,7 +358,7 @@ class Ui_MainWindow(object):
                             break
                     file.writelines(data)
                     file.close()
-                    main.current_path = self.history[-1]
+                    self.current_path = self.history[-1]
             except PermissionError:
                 self.showError("Permission denied!")
             except:
@@ -361,17 +366,17 @@ class Ui_MainWindow(object):
         else:
             self.showError(self.directoryTextView.toPlainText()+" does not exist!")
     def makeFileList(self):
-        req = "get:"+main.current_path
+        req = "get:"+self.current_path
         req = req.encode("utf_8")
         print(req)
         self.client_socket.sendall(req)
         answer = self.client_socket.recv(self.MAX_BUFFER_SIZE)
         dict = json.loads(answer)
         print(dict)
-        main.file_list = []
+        self.file_list = []
         for i in range(len(dict)):
             itemm = dict[str(i)].split(',')
-            main.file_list.append(item.Item(itemm[0],itemm[1],itemm[2],int(itemm[3])))
+            self.file_list.append(item.Item(itemm[0],itemm[1],itemm[2],int(itemm[3])))
 
 
 
@@ -385,12 +390,30 @@ if __name__ == "__main__":
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     #default path show
-
-    ui.setupUi(MainWindow)
+    file = open("t.txt" , "r")
+    data = file.readline().split(',&*^')
+    ip =data[0]
+    port = int(data[1])
+    ui.setupUi(MainWindow,ip ,port)
     ui.makeFileList()
-    ui.showDirectoryContent(main.file_list)
+    ui.showDirectoryContent(ui.file_list)
+
+    MainWindow.show()
+    #print(self.current_path)
+    sys.exit(app.exec_())
+
+'''
+def makeNewUI(host, port):
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    #default path show
+
+    ui.setupUi(MainWindow,host, port)
+    ui.makeFileList()
+    ui.showDirectoryContent(ui.file_list)
 
     MainWindow.show()
     #print(main.current_path)
-    sys.exit(app.exec_())
-
+    sys.exit(app.exec_())'''

@@ -78,23 +78,34 @@ def client_service(conn, ip, port,clients,MAX_BUFFER_SIZE=4098):
                 conn.sendall(i)
             conn.sendall("finish,&*^".encode("utf_8"))
             file.close()
-clients = []
-MAX_BUFFER_SIZE = 4098
-server_socket = socket.socket()
-server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server_socket.bind(('',12345))
-server_socket.listen(2)
-while True:
-    conn , addr = server_socket.accept()
-    ip , port = str(addr[0]) , str(addr[1])
-    clients.append(conn)
-    print('Accepting connection from ' + ip + ':' + port)
-    try:
-        Thread(target=client_service,args=(conn, ip, port,clients)).start()
-    except:
-        print("Bad thing happend!")
-        import traceback
-        traceback.print_exc()
+
+
+# for managing the clients who wants to see this system files
+def createServerside(host,port):
+    print("serside is created")
+    print("serside is created")
+    print("serside is created")
+    print("serside is created")
+
+    clients = []
+    MAX_BUFFER_SIZE = 4098
+    server_socket = socket.socket()
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.bind((host,port))
+    server_socket.listen(2)
+
+    while True:
+        print("serside is created")
+        conn , addr = server_socket.accept()
+        ip , port = str(addr[0]) , str(addr[1])
+        clients.append(conn)
+        print('Accepting connection from ' + ip + ':' + port)
+        try:
+            Thread(target=client_service,args=(conn, ip, port,clients)).start()
+        except:
+            print("Bad thing happend!")
+            import traceback
+            traceback.print_exc()
 
 
 

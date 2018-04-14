@@ -235,10 +235,15 @@ class Ui_MainWindow(object):
         folderIcon = QtGui.QIcon(QtGui.QPixmap("folderIcon.png"))
         for i in range(len(item_list)):
             icon = fileIcon
-            if os.path.isdir(item_list[i].path+"/"+item_list[i].name):
+            req = "isdir:" + item_list[i].path+"/"+item_list[i].name
+            req = req.encode("utf_8")
+            self.client_socket.sendall(req)
+            ans = self.client_socket.recv(self.MAX_BUFFER_SIZE)
+            ans = ans.decode('utf_8')
+            if ans == 'T':
                 icon = folderIcon
             self.itemsView.setItem(i, 0, QTableWidgetItem(icon,item_list[i].name))
-            self.itemsView.setItem(i,1 , QTableWidgetItem(item_list[i].date))
+            self.itemsView.setItem(i, 1, QTableWidgetItem(item_list[i].date))
             if icon == folderIcon:
                 self.itemsView.setItem(i,2,QTableWidgetItem("--"))
             else:

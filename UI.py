@@ -219,7 +219,7 @@ class Ui_MainWindow(object):
             for i in self.itemsView.selectedItems():
                 self.selected_items.append(
                     item.Item(main.current_path, i.text(), time.ctime(os.path.getmtime(main.current_path + '/' + i.text())),
-                              os.path.getsize(main.current_path + '/' + i.text())))
+                              os.path.getsize(main.getPath(main.current_path, i.text()))))
             for i in self.selected_items:
                 i.delete()
             main.file_list = item.getItemList(main.current_path)
@@ -347,13 +347,13 @@ class Ui_MainWindow(object):
             text, okPressed = QInputDialog.getText(MainWindow, "Get Name", "Name:", QLineEdit.Normal, name)
             if okPressed and text != '':
                 name  = text
-                if os.path.exists(main.current_path+'/'+name):
+                if os.path.exists(main.getPath(main.current_path, name)):
                     i = 1
-                    while os.path.exists(main.current_path + '/' + name+ ' (' + str(i) + ')'):
+                    while os.path.exists(main.getPath(main.current_path, name) + ' (' + str(i) + ')'):
                         i+=1
-                    os.makedirs(main.current_path + '/' + name+ ' (' + str(i) + ')')
+                    os.makedirs(main.getPath(main.current_path, name) + ' (' + str(i) + ')')
                 else:
-                    os.makedirs(main.current_path+'/'+name)
+                    os.makedirs(main.getPath(main.current_path, name))
                 main.file_list = item.getItemList(main.current_path)
                 self.showDirectoryContent(main.file_list)
         except PermissionError:
@@ -365,7 +365,7 @@ class Ui_MainWindow(object):
             self.selected_items = []
             self.cut_selected_items = []
             for i in self.itemsView.selectedItems():
-                self.selected_items.append(item.Item(main.current_path , i.text(), time.ctime(os.path.getmtime(main.current_path + '/' +i.text())), os.path.getsize(main.current_path + '/' + i.text())))
+                self.selected_items.append(item.Item(main.current_path , i.text(), time.ctime(os.path.getmtime(main.getPath(main.current_path, i.text()))), os.path.getsize(main.getPath(main.current_path, i.text()))))
         except PermissionError:
             self.showError("Permission denied!")
         except :
@@ -393,8 +393,8 @@ class Ui_MainWindow(object):
             self.cut_selected_items = []
             for i in self.itemsView.selectedItems():
                 self.cut_selected_items.append(
-                    item.Item(main.current_path, i.text(), time.ctime(os.path.getmtime(main.current_path + '/' + i.text())),
-                              os.path.getsize(main.current_path + '/' + i.text())))
+                    item.Item(main.current_path, i.text(), time.ctime(os.path.getmtime(main.getPath(main.current_path, i.text()))),
+                              os.path.getsize(main.getPath(main.current_path, i.text()))))
         except PermissionError:
             self.showError("Permission denied!")
         except :

@@ -117,7 +117,7 @@ class Ui_MainWindow(object):
         delete_names_bytes = ("delete:"+delete_names).encode('utf_8')
         self.client_socket.sendall(delete_names_bytes)
 
-        answer = self.client_socket.recv(self.MAX_BUFFER_SIZE)
+        answer = self.client_socket.recv(self.MAX_BUFFER_SIZE).decode('utf_8')
         dict = json.loads(answer)
         print(dict)
         self.file_list = []
@@ -162,7 +162,7 @@ class Ui_MainWindow(object):
         #print(self.itemsView.selectedItems()[0].text())
     def pasteEvent(self):
         self.client_socket.sendall("paste".encode("utf_8"))
-        answer = self.client_socket.recv(self.MAX_BUFFER_SIZE)
+        answer = self.client_socket.recv(self.MAX_BUFFER_SIZE).decode('utf_8')
         dict = json.loads(answer)
         print(dict)
         self.file_list = []
@@ -373,7 +373,7 @@ class Ui_MainWindow(object):
         req = req.encode("utf_8")
         print(req)
         self.client_socket.sendall(req)
-        answer = self.client_socket.recv(self.MAX_BUFFER_SIZE)
+        answer = self.client_socket.recv(self.MAX_BUFFER_SIZE).decode('utf_8')
         dict = json.loads(answer)
         print(dict)
         self.file_list = []

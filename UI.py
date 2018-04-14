@@ -286,7 +286,7 @@ class Ui_MainWindow(object):
             Thread(target=self.updateComboBoxes).start()
 
             #host = ip
-            Thread(target=serverside.createServerside,args=(socket.gethostbyname(socket.gethostname()),personalPort)).start()
+            Thread(target=serverside.createServerside,args=(self.getLocalHost(),personalPort)).start()
         #print("server side is made for (host = , port = ) : " ,host,personalPort)
 
         except Exception as ex:

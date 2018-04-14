@@ -563,7 +563,12 @@ class Ui_MainWindow(object):
         self.actionMedium.setText(_translate("MainWindow", "Medium"))
         self.actionSmall.setText(_translate("MainWindow", "Small"))
         self.actionSort.setText(_translate("MainWindow", "Sort"))
-
+    def getLocalHost(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ret = s.getsockname()[0]
+        s.close()
+        return ret
     def onClickGoTo(self):#for go to button
         if os.path.exists(self.directoryTextView.toPlainText()):
             try:

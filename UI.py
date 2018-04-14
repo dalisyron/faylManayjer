@@ -334,7 +334,11 @@ class Ui_MainWindow(object):
             addr = '\\ '.join(addr)
 
         def an() :
-            os.system("python3 " + addr + "/UI_Other_device.py")
+            if sys.platform == 'win32':
+                os.system("python "+addr+ "/UI_Other_device.py")
+            else:
+                os.system("python3 " + addr + "/UI_Other_device.py")
+
         Thread(target=an).start()
 
 

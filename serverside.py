@@ -83,7 +83,7 @@ def client_service(conn, ip, port,clients,MAX_BUFFER_SIZE=4098):
 # for managing the clients who wants to see this system files
 def createServerside(host,port):
 
-    print("serverside is created")
+    print("serverside is created", host , port)
 
     clients = []
     MAX_BUFFER_SIZE = 4098

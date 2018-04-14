@@ -31,7 +31,7 @@ class Ui_MainWindow(object):
         self.client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.host = _host
         self.port = _port
-        print(self.host,self.port)
+        print("ui other :",self.host,self.port)
         self.client_socket.connect((self.host,self.port))
         self.history = [self.current_path]
         self.selected_items = []

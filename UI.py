@@ -286,7 +286,7 @@ class Ui_MainWindow(object):
             Thread(target=self.updateComboBoxes).start()
 
             #host = ip
-            Thread(target=serverside.createServerside,args=(host,personalPort)).start()
+            Thread(target=serverside.createServerside,args=(socket.gethostbyname(socket.gethostname()),personalPort)).start()
         #print("server side is made for (host = , port = ) : " ,host,personalPort)
 
         except Exception as ex:
@@ -306,6 +306,7 @@ class Ui_MainWindow(object):
             self.selectComboBox.clear()
             self.shareComboBox.clear()
             i = 0
+            print(self.connectedDevices)
             icon = QtGui.QIcon(QtGui.QPixmap("pc.png"))
             for device in self.connectedDevices:
                 self.selectComboBox.addItem(device)

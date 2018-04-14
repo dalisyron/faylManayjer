@@ -5,7 +5,6 @@ import time
 
 current_path = '/'
 file_list = item.getItemList(current_path)
-terminal_ui.printItemList(file_list)
 
 def getPath(current_path, new_directory):
   if (current_path == '/'):

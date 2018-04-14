@@ -30,8 +30,6 @@ class Ui_MainWindow(object):
         self.client_socket = socket.socket()
         self.client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.host = _host
-        if _host == '127.0.0.1':
-            self.host=''
         self.port = _port
         print(self.host,self.port)
         self.client_socket.connect((self.host,self.port))

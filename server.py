@@ -34,7 +34,7 @@ class Server:
                 personalPort = int(clientInfo[1])
                 self.clients[name] = {"conn":conn,"ip":ip,"personalPort":int(personalPort)}
                 self.updateClientsData()
-
+                
     def updateClientsData(self):
         dic = {}
         for client in  self.clients:
